@@ -1,0 +1,3 @@
+---
+# vars file for awslogs
+log_datetime_format: "%Y%m%d %H:%M:%S"

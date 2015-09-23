@@ -1,0 +1,41 @@
+---
+- name: install awslogs package
+  yum: 
+    name: awslogs
+    state: present
+### NOTE: enabled:yes in service should do this
+###- name: make awslogs run on startup
+###  shell:
+###    cmd: chkconfig awslogs on
+- name: copy awscli.conf - set to us-west-2
+  copy:
+    src: awscli.conf
+    dest: /etc/awslogs/awscli.conf
+    mode: "0600"
+- name: make tempdir to store awslogs.conf fragments
+  file:
+    path: /tmp/awslogs.conf
+    state: directory
+  register: tempdir
+- name: copy base awslogs.conf to machine
+  template:
+    src: awslogs.conf.j2
+    dest: "{{ tempdir.path }}/awslogs-base"
+- name: copy additional conf from dependent role (dir_dep_role)
+  template:
+    src: "{{dir_dep_role_templates}}/awslogs.conf.j2"
+    dest: "{{ tempdir.path }}/awslogs-role"
+- name: assemble CloudWatch config file
+  assemble:
+    src: /tmp/awslogs.conf
+    dest: /etc/awslogs/awslogs.conf
+    mode: "0644"
+  notify:
+    - restart awslogs
+- meta: flush_handlers
+# NOTE: the handler is not working so just start the darn service
+- name: start awslogs
+  service:
+    name: awslogs
+    state: started
+    enabled: yes

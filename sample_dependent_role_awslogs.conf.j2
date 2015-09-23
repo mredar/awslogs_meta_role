@@ -1,0 +1,24 @@
+# NOTE: the values with double braces ({{ value }}) are ansible variables that
+# will be substituted when the template is processed.
+# the variables with single braces e.g. "{instance_id}" are values which the
+# aws daemon fills in.
+# 
+# The log_group_name will partition logs into different Cloudwatch log groups.
+# the log_stream_name will name individual log streams and need to be unique
+# for an instance of a log.
+
+[akara-error.log]
+datetime_format = {{ log_datetime_format }}
+buffer_duration = 5000
+initial_position = start_of_file
+file = {{ dir_for_my_logs }}/logs/error.log
+log_stream_name = {{ my-log-basename-in-ansible-var }}-{instance_id}-{ip_address}
+log_group_name = {{ some_group_name_for_logs }}
+
+[worker-log]
+datetime_format = {{ log_datetime_format }}
+buffer_duration = 5000
+initial_position = start_of_file
+file = /var/logs/worker.log
+log_stream_name = {{ awslogs_basename }}-{instance_id}-{ip_address}
+log_group_name = {{ some_group_name_for_logs }}
